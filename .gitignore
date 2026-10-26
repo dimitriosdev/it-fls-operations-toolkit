@@ -1,0 +1,12 @@
+output/
+*.log
+*.json
+!.sample.json
+
+.vscode/
+.idea/
+
+bin/
+obj/
+
+*.tmp
