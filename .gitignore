@@ -1,12 +1,16 @@
+# Local config
+.env
+
+# Exported data
 output/
-*.log
 *.json
-!.sample.json
+!sample-output.json
 
+# Logs
+*.log
+
+# VS Code
 .vscode/
-.idea/
 
-bin/
-obj/
-
-*.tmp
+# PowerShell
+*.ps1xml
