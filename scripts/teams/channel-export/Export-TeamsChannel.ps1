@@ -247,6 +247,29 @@ Connect-MgGraph -Scopes "ChannelMessage.Read.All"
 
 Write-Log "Connected account: $($Context.Account)"
 
+function Get-NextLink {
+
+    param(
+        $Response
+    )
+
+    if ($null -eq $Response) {
+        return $null
+    }
+
+    if ($Response -is [System.Collections.IDictionary]) {
+        return $Response["@odata.nextLink"]
+    }
+
+    $NextLinkProperty = $Response.PSObject.Properties["@odata.nextLink"]
+
+    if ($NextLinkProperty) {
+        return $NextLinkProperty.Value
+    }
+
+    return $null
+}
+
 # --------------------------------------------------
 # Get All Messages
 # --------------------------------------------------
@@ -274,7 +297,7 @@ do {
         Write-Log "Collected messages: $($Messages.Count)"
     }
 
-    $MessageUri = $Response.'@odata.nextLink'
+    $MessageUri = Get-NextLink -Response $Response
 
 }
 while ($MessageUri)
@@ -309,7 +332,7 @@ function Get-AllReplies {
             $Replies += $Response.value
         }
 
-        $ReplyUri = $Response.'@odata.nextLink'
+        $ReplyUri = Get-NextLink -Response $Response
 
     }
     while ($ReplyUri)
@@ -345,7 +368,7 @@ foreach ($Message in $Messages) {
 
     try {
 
-        $Replies = Get-AllReplies -MessageId $Message.id
+        $Replies = @(Get-AllReplies -MessageId $Message.id)
     }
     catch {
 
