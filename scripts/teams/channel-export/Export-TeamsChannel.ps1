@@ -169,6 +169,45 @@ function Convert-HtmlToPlainText {
 }
 
 # --------------------------------------------------
+# Reaction Summary
+# --------------------------------------------------
+
+function Get-ReactionSummary {
+
+    param(
+        $Reactions
+    )
+
+    # Graph reactionType: "like", "heart" or the unicode character itself
+    $Supported = [ordered]@{
+        "✅" = @("✅", "checkmark", "white_check_mark")
+        "👍" = @("like", "👍")
+        "❤️" = @("heart", "❤️", "❤")
+    }
+
+    $Reactions = @($Reactions | Where-Object { $_ })
+
+    foreach ($Emoji in $Supported.Keys) {
+
+        $Matched = @(
+            $Reactions | Where-Object {
+                $Supported[$Emoji] -contains $_.reactionType
+            }
+        )
+
+        [PSCustomObject]@{
+            Reaction = $Emoji
+            Count    = $Matched.Count
+            Users    = @(
+                $Matched |
+                ForEach-Object { $_.user.user.displayName } |
+                Where-Object { $_ }
+            )
+        }
+    }
+}
+
+# --------------------------------------------------
 # Retry Handler
 # --------------------------------------------------
 
@@ -391,6 +430,8 @@ foreach ($Message in $Messages) {
             $Message.body.content
 
         HtmlContent = $Message.body.content
+
+        Reactions = @(Get-ReactionSummary -Reactions $Message.reactions)
 
         ReplyCount = $Replies.Count
 
